@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">geodash</string>
+    <string name="background_description">backround menu</string>
+    <string name="button_text">Button</string>
+</resources>
