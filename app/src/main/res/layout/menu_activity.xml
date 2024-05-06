@@ -30,44 +30,9 @@
         android:background="@android:color/transparent"
         android:src="@drawable/geodash_box" />
 
-    <ImageButton
-        android:id="@+id/buttonsoundon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="150dp"
-        android:layout_marginStart="600dp"
-        android:scaleType="fitCenter"
-        android:background="@android:color/transparent"
-        android:src="@drawable/logo_on" />
-    <ImageButton
-        android:id="@+id/buttonsoundoff"
-        android:layout_width="50dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="150dp"
-        android:layout_marginStart="640dp"
-        android:scaleType="fitCenter"
-        android:background="@android:color/transparent"
-        android:src="@drawable/logo_off" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
 
 
-        <SeekBar
-            android:id="@+id/volumeSeekBar"
-            style="@style/CustomSeekBarStyle"
-            android:layout_width="110dp"
-            android:layout_marginTop="180dp"
-            android:layout_marginStart="570dp"
-            android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="50" />
 
-
-    </LinearLayout>
 
 
 

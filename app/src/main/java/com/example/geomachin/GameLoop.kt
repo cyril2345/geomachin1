@@ -1,11 +1,9 @@
 package com.example.geomachin
 
-import android.app.Activity
-import android.media.MediaPlayer
+
 import android.view.View
 import android.widget.FrameLayout
 import android.util.Log
-import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.ImageView
 
@@ -17,6 +15,7 @@ class GameLoop(
     private val obstacleViews: List<ObstacleView>) : Thread() {
 
     private var running = false
+    private var paused = false
     private val targetFPS = 80
 
     fun setRunning(isRunning: Boolean) {
@@ -24,14 +23,24 @@ class GameLoop(
     }
 
 
-    fun playSound() {
-        val mediaPlayer = MediaPlayer.create(mainActivity, R.raw.crash)
-        mediaPlayer.start()
+    fun pauseGame() {
+        synchronized(this) {
+            paused = true
+        }
     }
 
+    fun resumeGame() {
+        synchronized(this) {
+            paused = false
+            (this as Object).notifyAll()  // Properly notify all waiting threads
+        }
+    }
 
+    fun isPaused(): Boolean {
+        return paused
+    }
 
-    fun updateProgressBar(progress: Float) {
+    private fun updateProgressBar(progress: Float) {
         mainActivity.runOnUiThread {
             val progressBar = mainActivity.findViewById<FrameLayout>(R.id.progress_container)
             val fillView = mainActivity.findViewById<View>(R.id.progress_fill)
@@ -55,7 +64,7 @@ class GameLoop(
 
 
 
-    fun updateLives(lives: Int) {
+    private fun updateLives(lives: Int) {
         mainActivity.runOnUiThread {
             val heartIds = arrayOf(R.id.heart1, R.id.heart2, R.id.heart3, R.id.heart4, R.id.heart5)
             heartIds.forEachIndexed { index, heartId ->
@@ -70,7 +79,7 @@ class GameLoop(
     }
 
 
-    fun updatePieces() {
+    private fun updatePieces() {
         val counter = game.getCoinsResult()
         mainActivity.runOnUiThread {
             val scoreText = mainActivity.findViewById<TextView>(R.id.piece_text)
@@ -89,12 +98,19 @@ class GameLoop(
         var flag = 0
 
         while (running) {
+            synchronized(this) {
+                while (paused) {
+                    try {
+                        (this as Object).wait()  // Wait until notified
+                    } catch (e: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        return
+                    }
+                }
+            }
+
             val currentTime = System.nanoTime()
             val elapsedTime = currentTime - lastUpdateTime
-
-            if (!running) { // to exit properly
-                break;
-            }
 
             if (elapsedTime >= updateInterval) {
                 synchronized(playerView) {
@@ -135,8 +151,10 @@ class GameLoop(
 
                 }
 
-                playerView.postInvalidate()
-                obstacleViews.forEach { it.postInvalidate() }
+                //rendering player
+                playerView.postInvalidate() //remplacer postInvalidate() par update()
+                //rendering obstacles
+                obstacleViews.forEach { it.postInvalidate() } //remplacer postInvalidate() par update()
 
                 lastUpdateTime = currentTime
             }
@@ -156,34 +174,20 @@ class GameLoop(
         handleGameEnd(flag)
     }
 
+
+
+
     private fun handleGameEnd(flag: Int) {
-        playSound()
-        if (flag == 10) { // lost a life
-            mainActivity.runOnUiThread { mainActivity.restartGame() }
-        }
-        else if(flag ==12) { // victory
-            mainActivity.runOnUiThread {
-                mainActivity.setContentView(R.layout.victory_activity)
-                mainActivity.findViewById<ImageButton>(R.id.button2).setOnClickListener {
-                    mainActivity.startGame()
-                }
-            }
-        }
-        else if(flag ==13) { // gameover
-            mainActivity.runOnUiThread {
-                mainActivity.setContentView(R.layout.gameover_activity)
-                mainActivity.findViewById<ImageButton>(R.id.button3).setOnClickListener {
-                    mainActivity.startGame()
-                }
-            }
-        }
-        else {
-            //
-        }
+        mainActivity.runOnUiThread {
+            mainActivity.playSound(flag)  // Trigger appropriate sound playback
 
+            when (flag) {
+                10 -> mainActivity.restartGame()  // Lost a life
+                12 -> mainActivity.showVictory()  // Victory
+                13 -> mainActivity.showGameOver()  // Game over
+            }
+        }
     }
-
-
 
 
 }

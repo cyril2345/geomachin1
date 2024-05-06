@@ -6,7 +6,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.LinearGradient
 import android.graphics.Shader
-import com.example.geomachin.CollisionType
+
 
 class TrampoObstacle(override var positionX: Float, override val positionY: Float) : Obstacle {
     override val objectType = ObstacleType.TRAMPO

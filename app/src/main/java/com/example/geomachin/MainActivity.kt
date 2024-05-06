@@ -1,7 +1,5 @@
 package com.example.geomachin
 
-//import android.R
-
 import android.app.Activity
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -13,62 +11,72 @@ import android.widget.SeekBar
 
 class MainActivity : Activity() {
 
-    private lateinit var gameLoop: GameLoop
-    private lateinit var playerView: PlayerView
-    private lateinit var player: Player
-    private var obstacleViews = mutableListOf<ObstacleView>()
-    private lateinit var game: Game
-    private var mediaPlayer: MediaPlayer? = null
+    //new approach with GameBuilder
+    private lateinit var gameBuilder: GameBuilder
+    private lateinit var container: FrameLayout
+    private var introMediaPlayer: MediaPlayer? = null
+    private var crashMediaPlayer: MediaPlayer? = null
+    private var endGameMediaPlayer: MediaPlayer? = null
+    private var winMediaPlayer: MediaPlayer? = null
     private lateinit var audioManager: AudioManager
+    private lateinit var gameLoop: GameLoop
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_activity) // Set the content view to menu_activity.xml
 
-        // Initialize AudioManager
-        audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-
-        // Create MediaPlayer instance
-        mediaPlayer = MediaPlayer.create(this, R.raw.xstepmusic).apply {
-            isLooping = true  // Set looping
-            setVolume(1.0f, 1.0f)  // Set initial volume
-            start()  // Start playback
-        }
+        audioManager = getSystemService(AUDIO_SERVICE) as AudioManager // Initialize AudioManager
+        setupMediaPlayers() // Initialize media players
+        setupUI()           // Setup UI elements and listeners
+        introMediaPlayer?.start()
+    }
 
 
-        // Initialize the game
-        //game = Game(this,2000, 400)
+    private fun setupUI() {
 
         val startButton = findViewById<ImageButton>(R.id.button1)
-        val soundOnButton = findViewById<ImageButton>(R.id.buttonsoundon)
-        val soundOffButton = findViewById<ImageButton>(R.id.buttonsoundoff)
-        val volumeSeekBar = findViewById<SeekBar>(R.id.volumeSeekBar);
 
 
         // Start Game when the button is clicked
         startButton.setOnClickListener {
-           startGame()
+            startGame()
         }
 
-        // Start Game when the button is clicked
-        soundOnButton.setOnClickListener {
-            mediaPlayer?.setVolume(1.0f, 1.0f); // Set volume to full
+    }
+
+    public fun startGame() {
+        setContentView(R.layout.activity_main)
+        container = findViewById(R.id.container)
+
+        gameBuilder = GameBuilder(this)
+            .setupContainer(container)
+            .build()
+            .addPlayer()
+            .addObstacles()
+            .initializeGameLoop()
+            .startGame()
+
+        // Initialize stop button and set its click listener
+        val stopButton = findViewById<ImageButton>(R.id.stopButton)
+        stopButton.setOnClickListener {
+            onStopGame()
         }
 
-
-        // Start Game when the button is clicked
-        soundOffButton.setOnClickListener {
-            mediaPlayer?.setVolume(0f, 0f); // Mute the media player
+        val pauseButton = findViewById<ImageButton>(R.id.pauseButton)
+        pauseButton.setOnClickListener {
+            onTogglePauseGame()
         }
 
         // Volume bar to set volume
-        volumeSeekBar?.apply {
+        val volumeSeekBar2 = findViewById<SeekBar>(R.id.volumeSeekBar2)
+        volumeSeekBar2?.apply {
             max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
             progress = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
-                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
+                        val normalizedVolume = progress.toFloat() / max.toFloat() // Normalize to 0..1
+                        gameBuilder.setVolume(normalizedVolume)
                     }
                 }
 
@@ -76,131 +84,79 @@ class MainActivity : Activity() {
                 override fun onStopTrackingTouch(seekBar: SeekBar) {}
             })
         }
+    }
 
 
+     fun restartGame() {
+        gameBuilder.restartGame()
+    }
 
 
-
-        }
-
-    public fun startGame() {
-        // Set the content view to activity_main.xml when the button is clicked
-        setContentView(R.layout.activity_main)
-
-        // Initialize the game
-        game = Game(this,2000, 400)
-
-        // Create PlayerView
-        playerView = PlayerView(this, game.getPlayer())
-
-        // Cleanup before setting up a new game
-        //cleanup()//to test
-
-        // Add PlayerView to layout
-        val container = findViewById<FrameLayout>(R.id.container)
-        container.addView(playerView)
-
-
-        // obstacleViews = mutableListOf() // to test Reset the obstacleViews list
-
-        // Create and add obstacle views
-        for (obstacle in game.getObstacles()) {
-            val obstacleView = ObstacleView(this, obstacle)
-            container.addView(obstacleView)
-            obstacleViews.add(obstacleView)
-        }
-
-        // Create and start GameLoop
-        gameLoop = GameLoop(this,game, playerView, obstacleViews)
-        gameLoop.setRunning(true)
-        gameLoop.start()
-
-
-        // Initialize stop button and set its click listener
-        val stopButton = findViewById<ImageButton>(R.id.stopButton)
-        stopButton.setOnClickListener {
-            stopGame()
+    private fun onStopGame() { // In case Stop Button is pressed
+        showGameOver()
+        gameBuilder.stopGame()  // Stop the game loop
+        gameBuilder.cleanup()  // Clean up the game view
+        setContentView(R.layout.menu_activity)  // Optionally return to the main menu
+        val startButton = findViewById<ImageButton>(R.id.button1)
+        startButton.setOnClickListener {
+           //startGame()
         }
     }
 
 
-    public fun restartGame() {
-        // Ensure the current game loop is stopped properly
-        if (::gameLoop.isInitialized) {
-            gameLoop.setRunning(false)
-            try {
-                gameLoop.join()  // Wait for the game loop thread to terminate
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt() // Re-interrupt if interrupted during join
-            }
+    private fun onTogglePauseGame() { // in case Pause button is pressed
+        if (gameBuilder.isPaused()) {
+            gameBuilder.resumeGame()  // Clean up the game view
+        } else {
+            gameBuilder.pauseGame()  // Stop the game loop
+
         }
 
-        // Optionally reset the game state without reinitializing everything
-        game.resetGame()  // Assuming `resetGame()` method in `Game` class resets only necessary components
-
-        // Clear existing obstacle views
-        val container = findViewById<FrameLayout>(R.id.container)
-        container.removeAllViews()
-
-        // Reinitialize views and components
-        playerView = PlayerView(this, game.getPlayer())
-        container.addView(playerView)
-
-        obstacleViews.clear()
-        for (obstacle in game.getObstacles()) {
-            val obstacleView = ObstacleView(this, obstacle)
-            container.addView(obstacleView)
-            obstacleViews.add(obstacleView)
-        }
-
-
-
-        // Restart the GameLoop
-        gameLoop = GameLoop(this, game, playerView, obstacleViews)
-        gameLoop.setRunning(true)
-        gameLoop.start()
     }
 
-
-    override fun onPause() {
-        super.onPause()
-        if (mediaPlayer!!.isPlaying) {
-            mediaPlayer!!.pause() // Pause when the activity is not in the foreground
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (!mediaPlayer!!.isPlaying) {
-            mediaPlayer!!.start() // Resume playback when the activity comes into the foreground
-        }
-    }
-
-
-    public fun stopGame() {
-        // Signal the game loop to stop
-        if (::gameLoop.isInitialized && gameLoop.isAlive) {
-            gameLoop.setRunning(false)
-        }
-
-        // showGameOver()
-
-        // Proceed to clear views and update UI without waiting for the thread to join
-        runOnUiThread {
-            val container = findViewById<FrameLayout>(R.id.container)
-            container.removeAllViews()
-            setContentView(R.layout.menu_activity)
-        }
-    }
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaPlayer!!.release() // Release MediaPlayer resource on destroy
-        mediaPlayer = null
+        introMediaPlayer!!.release() // Release MediaPlayer resource on destroy
+        crashMediaPlayer?.release()
+        //endGameMediaPlayer?.release()
+        //winMediaPlayer?.release()
+        introMediaPlayer = null
+        crashMediaPlayer = null
+        //endGameMediaPlayer = null
+        //winMediaPlayer = null
+
     }
 
 
-    public fun showGameOver() {
+    private fun setupMediaPlayers() {
+        introMediaPlayer = MediaPlayer.create(this, R.raw.intro)
+        crashMediaPlayer = MediaPlayer.create(this, R.raw.crash)
+        endGameMediaPlayer = MediaPlayer.create(this, R.raw.gameover)  // Assume you have an end_game_sound file
+        winMediaPlayer = MediaPlayer.create(this, R.raw.win)
+    }
+
+
+    fun playSound(soundType: Int) { // play specific sound based on results
+        when (soundType) {
+            10 -> crashMediaPlayer?.start()  // Play crash sound
+            12 -> winMediaPlayer?.start()  // Play win sound
+            13 -> endGameMediaPlayer?.start() // Play end game music
+
+        }
+    }
+
+    public fun showVictory() { // go to victory screen
+        gameBuilder.stopGame()
+        gameBuilder.cleanup()
+        setContentView(R.layout.victory_activity)
+        findViewById<ImageButton>(R.id.button2).setOnClickListener {
+            startGame()
+        }
+    }
+    public fun showGameOver() { // go to gameover screen
+        gameBuilder.stopGame()
+        gameBuilder.cleanup()
         // Set the content view to activity_main.xml when the button is clicked
         setContentView(R.layout.gameover_activity)
         findViewById<ImageButton>(R.id.button3).setOnClickListener {
