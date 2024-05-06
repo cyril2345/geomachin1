@@ -41,7 +41,6 @@ class MainActivity : Activity() {
         startButton.setOnClickListener {
             startGame()
         }
-
     }
 
      fun startGame() {

@@ -38,8 +38,6 @@ class SquareObstacle(override var positionX: Float, override val positionY: Floa
             positionY + size + shadowOffset,
             shadowPaint
         )
-
-
     }
 
     override fun update(speed: Float) {

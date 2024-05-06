@@ -13,7 +13,6 @@ class GameLoop(
     private val game: Game,
     private val playerView: PlayerView,
     private val obstacleViews: List<ObstacleView>) : Thread() {
-
     private var running = false
     private var paused = false
     private val targetFPS = 80
@@ -86,9 +85,6 @@ class GameLoop(
             scoreText?.text= counter.toString()
 
         }
-
-
-
     }
 
 
@@ -119,7 +115,6 @@ class GameLoop(
 
                     updateLives(game.getPlayer().lives) // Example to set lives remaining to 3 // game.PlayerLives()
                     updateProgressBar(game.gameProgress) // SWI Fill the progressbar
-                    //updateScoreBox(game.collisionCountCircle,game.collisionCountSquare,game.collisionCountTriangle)
                     updatePieces()
 
                     if (game.collisionCountTriangle >= 3 || game.collisionCountSquare >= 3) {
@@ -139,9 +134,7 @@ class GameLoop(
                     if (game.gameProgress >= 100) {
                         flag = 12
                         running = false
-
                     }
-
                 }
 
                 // UI updates
@@ -155,7 +148,6 @@ class GameLoop(
                 playerView.postInvalidate() //remplacer postInvalidate() par update()
                 //rendering obstacles
                 obstacleViews.forEach { it.postInvalidate() } //remplacer postInvalidate() par update()
-
                 lastUpdateTime = currentTime
             }
 

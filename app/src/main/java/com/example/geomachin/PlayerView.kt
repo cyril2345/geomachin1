@@ -26,16 +26,6 @@ class PlayerView(context: Context, private val player: Player) : View(context) {
         canvas.apply {
             // Draw the player square within the container
             canvas.drawBitmap(playerBitmap, player.positionX, player.positionY, null)
-
-            //old
-            //drawRect(
-            //    player.positionX,
-            //    player.positionY,
-            //    player.positionX + Player.WIDTH,
-            //    player.positionY + Player.HEIGHT,
-            //    paint
-            //)
-
         }
     }
 

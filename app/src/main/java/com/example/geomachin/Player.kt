@@ -12,7 +12,6 @@ class Player(
     ) {
 
 
-
     fun update() {
         //new
         val deltaTime =0.1f
@@ -82,6 +81,5 @@ class Player(
         const val HEIGHT = 80
         const val GRAVITY = 12f
         const val JUMP_VELOCITY = 80f
-        const val JUMP_HEIGHT = 300f
     }
 }
