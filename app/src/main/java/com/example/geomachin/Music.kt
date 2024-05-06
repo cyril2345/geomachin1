@@ -2,7 +2,7 @@ package com.example.geomachin
 
 import android.content.Context
 import android.media.MediaPlayer
-import android.net.Uri
+
 
 class Music (private val context: Context, private val musicResId: Int){
     private var mediaPlayer: MediaPlayer? = null
