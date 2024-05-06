@@ -44,7 +44,7 @@ class MainActivity : Activity() {
 
     }
 
-    public fun startGame() {
+     fun startGame() {
         setContentView(R.layout.activity_main)
         container = findViewById(R.id.container)
 
@@ -146,7 +146,7 @@ class MainActivity : Activity() {
         }
     }
 
-    public fun showVictory() { // go to victory screen
+     fun showVictory() { // go to victory screen
         gameBuilder.stopGame()
         gameBuilder.cleanup()
         setContentView(R.layout.victory_activity)
@@ -154,7 +154,7 @@ class MainActivity : Activity() {
             startGame()
         }
     }
-    public fun showGameOver() { // go to gameover screen
+     fun showGameOver() { // go to gameover screen
         gameBuilder.stopGame()
         gameBuilder.cleanup()
         // Set the content view to activity_main.xml when the button is clicked
