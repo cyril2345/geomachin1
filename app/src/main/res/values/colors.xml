@@ -7,4 +7,13 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">#FF6200EE</color>
+    <color name="colorProgress">#FF3700B3</color>
+    <color name="colorTrack">#FF018786</color>
+    <style name="CustomSeekBarStyle">
+        <item name="colorControlActivated">@color/colorProgress</item>
+        <item name="android:progressTint">@color/colorProgress</item>
+        <item name="android:secondaryProgressTint">@color/colorTrack</item>
+        <item name="android:backgroundTint">@color/colorTrack</item>
+    </style>
 </resources>

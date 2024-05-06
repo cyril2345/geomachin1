@@ -61,8 +61,7 @@ class MainActivity : Activity() {
             mediaPlayer?.setVolume(0f, 0f); // Mute the media player
         }
 
-        //
-
+        // Volume bar to set volume
         volumeSeekBar?.apply {
             max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
             progress = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -77,7 +76,7 @@ class MainActivity : Activity() {
                 override fun onStopTrackingTouch(seekBar: SeekBar) {}
             })
         }
-        //
+
 
 
 
@@ -115,6 +114,13 @@ class MainActivity : Activity() {
         gameLoop = GameLoop(this,game, playerView, obstacleViews)
         gameLoop.setRunning(true)
         gameLoop.start()
+
+
+        // Initialize stop button and set its click listener
+        val stopButton = findViewById<ImageButton>(R.id.stopButton)
+        stopButton.setOnClickListener {
+            stopGame()
+        }
     }
 
 
@@ -167,6 +173,23 @@ class MainActivity : Activity() {
         super.onResume()
         if (!mediaPlayer!!.isPlaying) {
             mediaPlayer!!.start() // Resume playback when the activity comes into the foreground
+        }
+    }
+
+
+    public fun stopGame() {
+        // Signal the game loop to stop
+        if (::gameLoop.isInitialized && gameLoop.isAlive) {
+            gameLoop.setRunning(false)
+        }
+
+        // showGameOver()
+
+        // Proceed to clear views and update UI without waiting for the thread to join
+        runOnUiThread {
+            val container = findViewById<FrameLayout>(R.id.container)
+            container.removeAllViews()
+            setContentView(R.layout.menu_activity)
         }
     }
 

@@ -92,6 +92,10 @@ class GameLoop(
             val currentTime = System.nanoTime()
             val elapsedTime = currentTime - lastUpdateTime
 
+            if (!running) { // to exit properly
+                break;
+            }
+
             if (elapsedTime >= updateInterval) {
                 synchronized(playerView) {
                     game.update()
