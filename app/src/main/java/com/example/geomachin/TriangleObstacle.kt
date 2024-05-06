@@ -6,12 +6,26 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PointF
 import kotlin.math.abs
+import android.graphics.LinearGradient
+import android.graphics.Shader
+
+
 
 class TriangleObstacle(override var positionX: Float, override val positionY: Float) : Obstacle {
-
+    override val objectType = ObstacleType.TRIANGLE
+    override var isVisible: Boolean = true
     override fun draw(canvas: Canvas) {
+        val size = size() //SWI
         val paint = Paint()
-        paint.color = Color.BLUE
+        //paint.color = Color.BLUE
+
+        // Gradient paint for the triangle
+        val gradient = LinearGradient(
+            positionX, positionY + size,
+            positionX + size / 2, positionY,
+            Color.BLUE, Color.CYAN, Shader.TileMode.CLAMP
+        )
+        paint.shader = gradient
 
         val path = Path()
         path.moveTo(positionX + size() / 2, positionY) // Top
@@ -22,6 +36,20 @@ class TriangleObstacle(override var positionX: Float, override val positionY: Fl
         path.close()
 
         canvas.drawPath(path, paint)
+
+        // Draw a slightly offset triangle for a shadow effect
+        val shadowPaint = Paint()
+        shadowPaint.color = Color.argb(50, 0, 0, 0)  // Semi-transparent black
+
+        val shadowPath = Path()
+        shadowPath.moveTo(positionX + size / 2 + 5, positionY + 5) // Shifted top
+        shadowPath.lineTo(positionX + 5, positionY + size + 5) // Shifted bottom-left
+        shadowPath.lineTo(positionX + size + 5, positionY + size + 5) // Shifted bottom-right
+        shadowPath.lineTo(positionX + size / 2 + 5, positionY + 5) // Back to Top
+
+        shadowPath.close()
+
+        canvas.drawPath(shadowPath, shadowPaint)
     }
 
     override fun update(speed: Float) {
@@ -29,7 +57,7 @@ class TriangleObstacle(override var positionX: Float, override val positionY: Fl
         positionX -= speed
     }
 
-    override fun checkCollision(player: Player): Boolean {
+    override fun checkCollision(player: Player): CollisionType {
         val playerPosition = PointF(player.positionX + Player.WIDTH / 2, player.positionY + Player.HEIGHT / 2)
 
         // Define vertices of the triangle
@@ -44,7 +72,11 @@ class TriangleObstacle(override var positionX: Float, override val positionY: Fl
         val area3 = triangleArea(v1, v2, playerPosition)
 
         // If the sum of the three areas equals the total area, the point is inside the triangle
-        return abs(totalArea - (area1 + area2 + area3)) < 0.0001f // Adjust epsilon as needed
+        if (abs(totalArea - (area1 + area2 + area3)) < 0.0001f) {
+            return CollisionType.GENERAL_COLLISION// Adjust epsilon as needed
+        }
+        else return CollisionType.NO_COLLISION
+
     }
 
     override fun color(): Int {
@@ -52,7 +84,7 @@ class TriangleObstacle(override var positionX: Float, override val positionY: Fl
     }
 
     override fun size(): Int {
-        return 150
+        return 80
     }
 
     private fun triangleArea(a: PointF, b: PointF, c: PointF): Float {

@@ -6,10 +6,10 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.LinearGradient
 import android.graphics.Shader
+import com.example.geomachin.CollisionType
 
-
-class SquareObstacle(override var positionX: Float, override val positionY: Float) : Obstacle {
-    override val objectType = ObstacleType.SQUARE
+class TrampoObstacle(override var positionX: Float, override val positionY: Float) : Obstacle {
+    override val objectType = ObstacleType.TRAMPO
     override var isVisible: Boolean = true
     override fun draw(canvas: Canvas) {
         val size = size()
@@ -19,7 +19,7 @@ class SquareObstacle(override var positionX: Float, override val positionY: Floa
         val gradient = LinearGradient(
             positionX, positionY,
             positionX + size, positionY + size,
-            Color.GREEN, Color.argb(255, 0, 255, 0), Shader.TileMode.CLAMP
+            Color.YELLOW, Color.argb(255, 0, 255, 0), Shader.TileMode.CLAMP
         )
         //paint.color = Color.GREEN
 
@@ -70,7 +70,7 @@ class SquareObstacle(override var positionX: Float, override val positionY: Floa
     }
 
     override fun color(): Int {
-        return Color.GREEN
+        return Color.YELLOW
     }
 
     override fun size(): Int {
