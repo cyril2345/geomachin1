@@ -128,7 +128,7 @@ class MainActivity : Activity() {
     }
 
 
-    private fun setupMediaPlayers() {
+    protected fun setupMediaPlayers() {
         introMediaPlayer = MediaPlayer.create(this, R.raw.intro)
         crashMediaPlayer = MediaPlayer.create(this, R.raw.crash)
         endGameMediaPlayer = MediaPlayer.create(this, R.raw.gameover)  // Assume you have an end_game_sound file
