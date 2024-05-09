@@ -18,7 +18,7 @@ class MainActivity : Activity() {
     private var crashMediaPlayer: MediaPlayer? = null
     private var endGameMediaPlayer: MediaPlayer? = null
     private var winMediaPlayer: MediaPlayer? = null
-    private lateinit var audioManager: AudioManager
+    protected lateinit var audioManager: AudioManager
     private lateinit var gameLoop: GameLoop
 
     override fun onCreate(savedInstanceState: Bundle?) {
